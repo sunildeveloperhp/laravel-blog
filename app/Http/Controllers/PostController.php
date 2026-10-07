@@ -30,6 +30,10 @@ class PostController extends Controller
     // A single post with its category, author, tags and comments
     public function show(Request $request, Post $post)
     {
+
+        $isPublished = $post->published_at?->isPast() ?? false;
+        abort_unless($isPublished || $request->user()?->can('update', $post), 404);
+
         $post->load(['category', 'user', 'tags']);
 
         // Everyone sees approved comments. A logged-in user also sees their own pending ones.

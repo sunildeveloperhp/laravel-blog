@@ -21,7 +21,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // In development, throw an error when a relationship is lazy loaded (N+1 problem)
-        Model::preventLazyLoading(! app()->isProduction());
+
+        Model::shouldBeStrict(! app()->isProduction());
 
         // Only admins can open the admin panel
         Gate::define('access-admin', function (User $user) {

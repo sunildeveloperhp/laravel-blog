@@ -11,6 +11,9 @@ class CommentController extends Controller
     // Save a new comment on a post (website form)
     public function store(StoreCommentRequest $request, Post $post, CommentService $comments)
     {
+
+        abort_unless($post->published_at?->isPast(), 404);
+
         $comment = $comments->create($post, $request->user(), $request->validated('body'));
 
         $message = $comment->isApproved()
