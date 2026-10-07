@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -51,6 +52,9 @@ class AuthController extends Controller
         $user = User::where('email', $data['email'])->first();
 
         if (! $user || ! Hash::check($data['password'], $user->password)) {
+            // Same event the website login fires, so LogFailedLogin records it too (without the password)
+            event(new Failed('sanctum', $user, ['email' => $data['email']]));
+
             throw ValidationException::withMessages([
                 'email' => ['These credentials do not match our records.'],
             ]);

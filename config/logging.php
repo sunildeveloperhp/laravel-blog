@@ -73,6 +73,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Security events such as failed logins: storage/logs/security-YYYY-MM-DD.log, kept 30 days
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'monthly' => [
             'driver' => 'monthly',
             'path' => storage_path('logs/laravel.log'),
