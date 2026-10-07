@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
+use App\Models\Category;
 
 class CategoryController extends Controller
 {
-    // All posts in one category
+    // All posts in one category (404 if the category doesn't exist)
     public function show($slug)
     {
-        $posts = PostController::dummyPosts()->where('category_slug', $slug);
-        $categoryName = Str::headline($slug);   // "web-development" becomes "Web Development"
+        $category = Category::where('slug', $slug)->firstOrFail();
 
-        return view('categories.show', compact('posts', 'categoryName'));
+        $posts = $category->posts()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->get();
+
+        return view('categories.show', compact('category', 'posts'));
     }
 }

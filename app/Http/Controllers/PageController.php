@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
+
 class PageController extends Controller
 {
     // Home page with the 3 latest posts
     public function home()
     {
-        $posts = PostController::dummyPosts()->take(3);
+        $posts = Post::with(['category', 'user'])
+            ->latest('published_at')
+            ->take(3)
+            ->get();
 
         return view('pages.home', ['posts' => $posts]);
     }

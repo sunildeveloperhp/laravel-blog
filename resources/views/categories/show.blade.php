@@ -1,5 +1,5 @@
-<x-layout :title="$categoryName">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Category: {{ $categoryName }}</h1>
+<x-layout :title="$category->name">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Category: {{ $category->name }}</h1>
 
     <div class="grid gap-6 md:grid-cols-2">
         @forelse ($posts as $post)

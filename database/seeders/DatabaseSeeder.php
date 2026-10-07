@@ -2,24 +2,32 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
+use App\Models\Post;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // A fixed admin account (password: "password"). We'll log in with it in Week 2.
+        $admin = User::factory()->create([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
         ]);
+
+        // 4 more random authors, plus the admin = 5 authors
+        $authors = User::factory(4)->create()->push($admin);
+
+        // The 5 fixed categories
+        $this->call(CategorySeeder::class);
+        $categories = Category::all();
+
+        // 30 posts, each one gets a random author and category from the lists above
+        Post::factory(30)
+            ->recycle($authors)
+            ->recycle($categories)
+            ->create();
     }
 }
