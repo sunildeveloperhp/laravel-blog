@@ -2,7 +2,7 @@
     <div class="max-w-3xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-900 mb-8">Edit post</h1>
 
-        <form action="{{ route('dashboard.posts.update', $post) }}" method="POST"
+        <form action="{{ route('dashboard.posts.update', $post) }}" method="POST" enctype="multipart/form-data"
               class="bg-white rounded-lg border border-gray-200 p-8 space-y-6">
             @csrf
             @method('PUT')

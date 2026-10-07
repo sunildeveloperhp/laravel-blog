@@ -6,10 +6,11 @@ use App\Models\Post;
 
 class PageController extends Controller
 {
-    // Home page with the 3 latest posts
+    // Home page with the 3 latest published posts
     public function home()
     {
         $posts = Post::with(['category', 'user'])
+            ->published()
             ->latest('published_at')
             ->take(3)
             ->get();

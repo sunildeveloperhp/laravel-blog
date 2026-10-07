@@ -32,6 +32,28 @@
 </div>
 
 <div>
+    <label for="featured_image" class="block text-sm font-medium text-gray-700 mb-1">Featured image</label>
+
+    @if ($post->featured_image_url)
+        <div class="mb-3 flex items-start gap-4">
+            <img src="{{ $post->featured_image_url }}" alt="Current featured image"
+                 class="w-40 h-24 object-cover rounded-md border border-gray-200">
+            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="remove_image" value="1" class="rounded border-gray-300">
+                Remove current image
+            </label>
+        </div>
+    @endif
+
+    <input type="file" id="featured_image" name="featured_image" accept="image/jpeg,image/png,image/webp"
+           class="block w-full text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-blue-700 hover:file:bg-blue-100">
+    <p class="mt-1 text-xs text-gray-500">JPG, PNG or WebP, up to 2 MB. Choosing a new file replaces the current one.</p>
+    @error('featured_image')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+</div>
+
+<div>
     <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
     <textarea id="excerpt" name="excerpt" rows="2"
               @class([
@@ -53,6 +75,28 @@
                   'border-gray-300' => ! $errors->has('body'),
               ])>{{ old('body', $post->body) }}</textarea>
     @error('body')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+</div>
+
+<div>
+    <span class="block text-sm font-medium text-gray-700 mb-2">Tags <span class="text-gray-400 font-normal">(up to 5)</span></span>
+
+    <div class="flex flex-wrap gap-x-6 gap-y-2">
+        @foreach ($tags as $tag)
+            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="tags[]" value="{{ $tag->id }}"
+                       @checked(in_array($tag->id, old('tags', $post->tags->pluck('id')->all())))
+                       class="rounded border-gray-300">
+                {{ $tag->name }}
+            </label>
+        @endforeach
+    </div>
+
+    @error('tags')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+    @error('tags.*')
         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
     @enderror
 </div>

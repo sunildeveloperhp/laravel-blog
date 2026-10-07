@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Post extends Model
@@ -20,6 +24,7 @@ class Post extends Model
         'slug',
         'excerpt',
         'body',
+        'featured_image',
         'published_at',
     ];
 
@@ -46,7 +51,6 @@ class Post extends Model
     {
         $slug = Str::slug($title);
 
-        // Titles with no English letters or numbers (e.g. only symbols) give an empty slug
         if ($slug === '') {
             $slug = 'post';
         }
@@ -54,7 +58,6 @@ class Post extends Model
         $original = $slug;
         $count = 2;
 
-        // withTrashed() also checks soft-deleted posts, because their slugs still exist in the table
         while (static::withTrashed()->where('slug', $slug)->exists()) {
             $slug = $original . '-' . $count;
             $count++;
@@ -62,6 +65,56 @@ class Post extends Model
 
         return $slug;
     }
+
+    // ---------- Accessors ----------
+
+    // $post->featured_image_url -> full URL of the image, or null if the post has no image
+    protected function featuredImageUrl(): Attribute
+    {
+        return Attribute::get(function () {
+            if (! $this->featured_image) {
+                return null;
+            }
+
+            return Storage::disk('public')->url($this->featured_image);
+        });
+    }
+
+    // ---------- Query scopes ----------
+
+    // Post::published() -> only posts that have a publish date that isn't in the future
+    public function scopePublished(Builder $query): void
+    {
+        $query->whereNotNull('published_at')
+              ->where('published_at', '<=', now());
+    }
+
+    // Post::search('laravel') -> title or excerpt contains the word. Does nothing if the term is empty.
+    public function scopeSearch(Builder $query, ?string $term): void
+    {
+        if (blank($term)) {
+            return;
+        }
+
+        $query->where(function (Builder $q) use ($term) {
+            $q->where('title', 'like', '%' . $term . '%')
+              ->orWhere('excerpt', 'like', '%' . $term . '%');
+        });
+    }
+
+    // Post::inCategory('php') -> only posts in that category. Does nothing if the slug is empty.
+    public function scopeInCategory(Builder $query, ?string $slug): void
+    {
+        if (blank($slug)) {
+            return;
+        }
+
+        $query->whereHas('category', function (Builder $q) use ($slug) {
+            $q->where('slug', $slug);
+        });
+    }
+
+    // ---------- Relationships ----------
 
     // A post belongs to one author
     public function user(): BelongsTo
@@ -73,5 +126,11 @@ class Post extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    // A post has many tags (through the post_tag pivot table)
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PostRequest;
 use App\Models\Category;
 use App\Models\Post;
+use App\Models\Tag;
 use App\Models\User;
 
 class PostController extends Controller
@@ -26,17 +27,19 @@ class PostController extends Controller
         return view('dashboard.posts.create', [
             'post' => new Post(),
             'categories' => Category::orderBy('name')->get(),
+            'tags' => Tag::orderBy('name')->get(),
         ]);
     }
 
-    // Save the new post. PostRequest has already validated the data by the time this runs.
+    // Save the new post and its tags
     public function store(PostRequest $request)
     {
-        $data = $request->validated();
-        $data['user_id'] = User::first()->id;   // TEMPORARY: Week 2 replaces this with the logged-in user
+        $data = $request->safe()->except('tags');   // everything except tags goes into the posts table
+        $data['user_id'] = User::first()->id;       // TEMPORARY: replaced by the logged-in user on Day 4
         $data['published_at'] = now();
 
-        $post = Post::create($data);            // the slug is created automatically by the model
+        $post = Post::create($data);
+        $post->tags()->sync($request->validated('tags', []));   // tags go into the post_tag table
 
         return redirect()
             ->route('dashboard.posts.index')
@@ -49,13 +52,15 @@ class PostController extends Controller
         return view('dashboard.posts.edit', [
             'post' => $post,
             'categories' => Category::orderBy('name')->get(),
+            'tags' => Tag::orderBy('name')->get(),
         ]);
     }
 
-    // Save the changes
+    // Save the changes, including tags
     public function update(PostRequest $request, Post $post)
     {
-        $post->update($request->validated());
+        $post->update($request->safe()->except('tags'));
+        $post->tags()->sync($request->validated('tags', []));
 
         return redirect()
             ->route('dashboard.posts.index')
