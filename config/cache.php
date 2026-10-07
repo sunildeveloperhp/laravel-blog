@@ -1,5 +1,10 @@
 <?php
 
+use App\Models\Category;
+use App\Models\Post;
+use App\Models\Tag;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
 return [
@@ -131,6 +136,13 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => [
+        // Classes our BlogCache stores (posts with their category and author, categories, tags)
+        Collection::class,
+        Post::class,
+        Category::class,
+        Tag::class,
+        User::class,
+    ],
 
 ];
