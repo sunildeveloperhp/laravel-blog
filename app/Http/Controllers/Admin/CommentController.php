@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\CommentApproved;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use Illuminate\Http\Request;
-use App\Events\CommentApproved;
 
 class CommentController extends Controller
 {
@@ -39,7 +39,7 @@ class CommentController extends Controller
 
         CommentApproved::dispatch($comment);
 
-        return back()->with('success', 'Comment by ' . $comment->user->name . ' was approved.');
+        return back()->with('success', 'Comment by '.$comment->user->name.' was approved.');
     }
 
     // Reject / remove a comment

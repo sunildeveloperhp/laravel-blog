@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Post;
 use App\Models\User;
+use App\Support\BlogCache;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -21,6 +22,7 @@ class PostService
         // Creating through the relationship fills user_id automatically
         $post = $author->posts()->create($data);
         $post->tags()->sync($tagIds);
+        BlogCache::flush();
 
         return $post;
     }
@@ -43,6 +45,7 @@ class PostService
 
         if ($tagIds !== null) {
             $post->tags()->sync($tagIds);
+            BlogCache::flush();   // tag counts may have changed even if nothing else did
         }
 
         return $post;

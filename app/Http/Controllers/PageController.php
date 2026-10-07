@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Http\Requests\ContactRequest;
 use App\Mail\ContactMessage;
-use App\Models\Post;
 use App\Models\User;
+use App\Support\BlogCache;
 use Illuminate\Support\Facades\Mail;
 
 class PageController extends Controller
@@ -14,13 +14,7 @@ class PageController extends Controller
     // Home page with the 3 latest published posts
     public function home()
     {
-        $posts = Post::with(['category', 'user'])
-            ->published()
-            ->latest('published_at')
-            ->take(3)
-            ->get();
-
-        return view('pages.home', ['posts' => $posts]);
+        return view('pages.home', ['posts' => BlogCache::homePosts()]);
     }
 
     public function about()
@@ -40,7 +34,7 @@ class PageController extends Controller
 
         $admins = User::where('role', Role::Admin)->get();
 
-                Mail::to($admins)->queue(new ContactMessage(
+        Mail::to($admins)->queue(new ContactMessage(
             $data['name'],
             $data['email'],
             $data['message'],

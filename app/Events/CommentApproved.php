@@ -11,7 +11,5 @@ class CommentApproved
 {
     use Dispatchable, SerializesModels;
 
-    public function __construct(public Comment $comment)
-    {
-    }
+    public function __construct(public Comment $comment) {}
 }

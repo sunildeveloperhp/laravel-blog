@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Post;
+use App\Support\BlogCache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -22,7 +23,7 @@ class PostController extends Controller
 
         return view('posts.index', [
             'posts' => $posts,
-            'categories' => Category::orderBy('name')->get(),
+            'categories' => BlogCache::categories(),
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\BlogCache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,11 +41,17 @@ class Post extends Model
     // Runs automatically: before a new post is saved, give it a unique slug
     protected static function booted(): void
     {
+        // Before a new post is saved, give it a unique slug
         static::creating(function (Post $post) {
             if (empty($post->slug)) {
                 $post->slug = static::uniqueSlug($post->title);
             }
         });
+
+        // Any change to a post can change the home page and the category/tag counts
+        static::saved(fn () => BlogCache::flush());
+        static::deleted(fn () => BlogCache::flush());
+        static::restored(fn () => BlogCache::flush());
     }
 
     // "Hello World" -> "hello-world", or "hello-world-2" if that's taken
