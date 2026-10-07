@@ -4,7 +4,7 @@ use App\Http\Controllers\Api\V1;
 use Illuminate\Support\Facades\Route;
 
 // Version 1 of the API. These URLs start with /api/v1 and route names with "api.v1."
-// (the prefix and name are added in routes/api.php).
+// (the prefix, name and the general "api" rate limit are added in routes/api.php).
 
 // GET /api/v1  ->  basic info about the API
 Route::get('/', function () {
@@ -21,9 +21,9 @@ Route::get('/posts/{post:slug}/comments', [V1\CommentController::class, 'index']
 Route::get('/categories', [V1\CategoryController::class, 'index'])->name('categories.index');
 Route::get('/tags', [V1\TagController::class, 'index'])->name('tags.index');
 
-// Get a token (max 6 tries per minute, so nobody can guess passwords quickly)
-Route::post('/register', [V1\AuthController::class, 'register'])->middleware('throttle:6,1')->name('register');
-Route::post('/login', [V1\AuthController::class, 'login'])->middleware('throttle:6,1')->name('login');
+// Get a token (stricter "login" limit on top of the general one)
+Route::post('/register', [V1\AuthController::class, 'register'])->middleware('throttle:login')->name('register');
+Route::post('/login', [V1\AuthController::class, 'login'])->middleware('throttle:login')->name('login');
 
 // Endpoints that need a valid token
 Route::middleware('auth:sanctum')->group(function () {
@@ -38,9 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/posts/{post:slug}', [V1\PostController::class, 'update'])->name('posts.update');
         Route::delete('/posts/{post:slug}', [V1\PostController::class, 'destroy'])->name('posts.destroy');
 
-        // Max 5 comments per minute, same as the website
         Route::post('/posts/{post:slug}/comments', [V1\CommentController::class, 'store'])
-            ->middleware('throttle:5,1')
+            ->middleware('throttle:comments')
             ->name('posts.comments.store');
     });
 });

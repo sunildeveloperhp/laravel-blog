@@ -21,7 +21,7 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/', 'home')->name('home');
     Route::get('/about', 'about')->name('about');
     Route::get('/contact', 'contact')->name('contact');
-    Route::post('/contact', 'sendContact')->middleware('throttle:3,1')->name('contact.send');
+    Route::post('/contact', 'sendContact')->middleware('throttle:contact')->name('contact.send');
 });
 
 // Public posts (read only)
@@ -36,10 +36,10 @@ Route::get('/authors/{user}', [AuthorController::class, 'show'])->name('authors.
 // Guests only
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store']);
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:login');
 
     Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store']);
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:login');
 
     Route::get('/forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'store'])->name('password.email');
@@ -68,7 +68,7 @@ Route::middleware('auth')->group(function () {
 
     // Comments (verified users only, max 5 per minute)
     Route::post('/posts/{post:slug}/comments', [CommentController::class, 'store'])
-        ->middleware(['verified', 'throttle:5,1'])
+        ->middleware(['verified', 'throttle:comments'])
         ->name('comments.store');
 
     // Dashboard: logged in AND email verified
