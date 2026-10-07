@@ -23,11 +23,9 @@ class PostController extends Controller
     }
 
     // A single post, found by its slug (404 if not found)
-    public function show($slug)
+ public function show(Post $post)
     {
-        $post = Post::with(['category', 'user'])
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $post->load(['category', 'user']);
 
         return view('posts.show', ['post' => $post]);
     }

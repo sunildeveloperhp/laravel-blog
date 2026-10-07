@@ -6,11 +6,9 @@ use App\Models\Category;
 
 class CategoryController extends Controller
 {
-    // All posts in one category (404 if the category doesn't exist)
-    public function show($slug)
-    {
-        $category = Category::where('slug', $slug)->firstOrFail();
 
+    public function show(Category $category)
+    {
         $posts = $category->posts()
             ->with(['category', 'user'])
             ->latest('published_at')
@@ -18,4 +16,5 @@ class CategoryController extends Controller
 
         return view('categories.show', compact('category', 'posts'));
     }
+
 }

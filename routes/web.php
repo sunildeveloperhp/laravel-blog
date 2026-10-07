@@ -1,9 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Dashboard\PostController as DashboardPostController;
+
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
+
 
 
 Route::controller(PageController::class)->group(function () {
@@ -28,3 +31,8 @@ Route::controller(PostController::class)
 Route::get('/categories/{slug}', [CategoryController::class, 'show'])
     ->where('slug', '[a-z0-9-]+')
     ->name('categories.show'); 
+
+    // Dashboard (login protection gets added in Week 2)
+Route::prefix('dashboard')->name('dashboard.')->group(function () {
+    Route::resource('posts', DashboardPostController::class)->except('show');
+});

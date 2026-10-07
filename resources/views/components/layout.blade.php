@@ -18,11 +18,12 @@
 
             <nav class="flex items-center gap-6 text-sm font-medium">
                 <x-nav-link :href="route('home')" :active="request()->routeIs('home')">Home</x-nav-link>
-                <x-nav-link :href="route('posts.index')" :active="request()->routeIs('posts.index', 'posts.show')">Posts</x-nav-link>
+                <x-nav-link :href="route('posts.index')" :active="request()->routeIs('posts.*')">Posts</x-nav-link>
                 <x-nav-link :href="route('about')" :active="request()->routeIs('about')">About</x-nav-link>
                 <x-nav-link :href="route('contact')" :active="request()->routeIs('contact')">Contact</x-nav-link>
+                <x-nav-link :href="route('dashboard.posts.index')" :active="request()->routeIs('dashboard.*')">Dashboard</x-nav-link>
 
-                <a href="{{ route('posts.create') }}"
+                <a href="{{ route('dashboard.posts.create') }}"
                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                     Write a post
                 </a>
@@ -31,6 +32,12 @@
     </header>
 
     <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-10">
+        @if (session('success'))
+            <div class="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                {{ session('success') }}
+            </div>
+        @endif
+
         {{ $slot }}
     </main>
 
