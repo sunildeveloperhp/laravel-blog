@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\Category;
+use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
@@ -16,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $admin = User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@example.com',
+            'role' => Role::Admin,
         ]);
 
         // 4 more random authors, plus the admin = 5 authors
@@ -36,5 +39,10 @@ class DatabaseSeeder extends Seeder
         $posts->each(function (Post $post) use ($tags) {
             $post->tags()->attach($tags->random(rand(1, 3)));
         });
+
+        Comment::factory(80)
+            ->recycle($posts)
+            ->recycle(User::all())
+            ->create();
     }
 }

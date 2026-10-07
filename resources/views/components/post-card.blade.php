@@ -30,6 +30,8 @@
 
         <p class="text-gray-600">{{ $post->excerpt }}</p>
 
-        <p class="text-sm text-gray-500 mt-4">By {{ $post->user->name }}</p>
+                <p class="text-sm text-gray-500 mt-4">
+            By <a href="{{ route('authors.show', $post->user) }}" class="hover:text-blue-600 hover:underline">{{ $post->user->name }}</a>
+        </p>
     </div>
 </article>

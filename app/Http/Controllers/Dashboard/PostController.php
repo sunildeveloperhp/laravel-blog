@@ -7,16 +7,20 @@ use App\Http\Requests\PostRequest;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Tag;
-use App\Models\User;
+use App\Services\PostService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
-    // Table of all posts with Edit / Delete buttons
-    public function index()
+    // Only the logged-in user's own posts
+    public function index(Request $request)
     {
-        $posts = Post::with('category')
+        $posts = $request->user()
+            ->posts()
+            ->with('category')
             ->latest('published_at')
-            ->get();
+            ->paginate(15);
 
         return view('dashboard.posts.index', ['posts' => $posts]);
     }
@@ -24,31 +28,35 @@ class PostController extends Controller
     // Show the empty "new post" form
     public function create()
     {
+        Gate::authorize('create', Post::class);
+
         return view('dashboard.posts.create', [
-            'post' => new Post(),
+            'post' => new Post,
             'categories' => Category::orderBy('name')->get(),
             'tags' => Tag::orderBy('name')->get(),
         ]);
     }
 
-    // Save the new post and its tags
-    public function store(PostRequest $request)
+    // Save the new post (PostRequest already checked permission and validated the data)
+    public function store(PostRequest $request, PostService $posts)
     {
-        $data = $request->safe()->except('tags');   // everything except tags goes into the posts table
-        $data['user_id'] = User::first()->id;       // TEMPORARY: replaced by the logged-in user on Day 4
-        $data['published_at'] = now();
-
-        $post = Post::create($data);
-        $post->tags()->sync($request->validated('tags', []));   // tags go into the post_tag table
+        $post = $posts->create(
+            $request->user(),
+            $request->safe()->except(['tags', 'featured_image', 'remove_image']),
+            $request->file('featured_image'),
+            $request->validated('tags', []),
+        );
 
         return redirect()
             ->route('dashboard.posts.index')
-            ->with('success', 'Post "' . $post->title . '" was published.');
+            ->with('success', 'Post "'.$post->title.'" was published.');
     }
 
-    // Show the form filled with an existing post
+    // Show the form filled with an existing post (owner only)
     public function edit(Post $post)
     {
+        Gate::authorize('update', $post);
+
         return view('dashboard.posts.edit', [
             'post' => $post,
             'categories' => Category::orderBy('name')->get(),
@@ -56,24 +64,29 @@ class PostController extends Controller
         ]);
     }
 
-    // Save the changes, including tags
-    public function update(PostRequest $request, Post $post)
+    // Save the changes (PostRequest already checked permission and validated the data)
+    public function update(PostRequest $request, Post $post, PostService $posts)
     {
-        $post->update($request->safe()->except('tags'));
-        $post->tags()->sync($request->validated('tags', []));
+        $posts->update(
+            $post,
+            $request->safe()->except(['tags', 'featured_image', 'remove_image']),
+            $request->file('featured_image'),
+            $request->boolean('remove_image'),
+            $request->validated('tags', []),   // the form sends no "tags" when all boxes are unticked = remove all
+        );
 
         return redirect()
             ->route('dashboard.posts.index')
-            ->with('success', 'Post "' . $post->title . '" was updated.');
+            ->with('success', 'Post "'.$post->title.'" was updated.');
     }
 
-    // Soft delete the post
+    // Soft delete the post (owner only)
     public function destroy(Post $post)
     {
+        Gate::authorize('delete', $post);
+
         $post->delete();
 
-        return redirect()
-            ->route('dashboard.posts.index')
-            ->with('success', 'Post "' . $post->title . '" was moved to trash.');
+        return back()->with('success', 'Post "'.$post->title.'" was moved to trash.');
     }
 }

@@ -21,12 +21,51 @@
                 <x-nav-link :href="route('posts.index')" :active="request()->routeIs('posts.*')">Posts</x-nav-link>
                 <x-nav-link :href="route('about')" :active="request()->routeIs('about')">About</x-nav-link>
                 <x-nav-link :href="route('contact')" :active="request()->routeIs('contact')">Contact</x-nav-link>
-                <x-nav-link :href="route('dashboard.posts.index')" :active="request()->routeIs('dashboard.*')">Dashboard</x-nav-link>
 
-                <a href="{{ route('dashboard.posts.create') }}"
-                   class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                    Write a post
-                </a>
+                @auth
+                    <x-nav-link :href="route('dashboard.posts.index')" :active="request()->routeIs('dashboard.*')">Dashboard</x-nav-link>
+
+                    @can('access-admin')
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">Admin</x-nav-link>
+                    @endcan
+
+                    @can('create', App\Models\Post::class)
+                        <a href="{{ route('dashboard.posts.create') }}"
+                           class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            Write a post
+                        </a>
+                    @endcan
+
+                    <span class="text-gray-400">|</span>
+
+                    @php
+                        $unreadCount = auth()->user()->unreadNotifications()->count();
+                    @endphp
+                    <a href="{{ route('notifications.index') }}" class="relative text-lg leading-none" title="Notifications">
+                        🔔
+                        @if ($unreadCount > 0)
+                            <span class="absolute -top-2 -right-3 rounded-full bg-red-600 text-white text-[10px] font-semibold px-1.5 py-0.5">
+                                {{ $unreadCount }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.*')">{{ auth()->user()->name }}</x-nav-link>
+
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="text-gray-600 hover:text-gray-900">Log out</button>
+                    </form>
+                @endauth
+
+                @guest
+                    <x-nav-link :href="route('login')" :active="request()->routeIs('login')">Log in</x-nav-link>
+
+                    <a href="{{ route('register') }}"
+                       class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        Register
+                    </a>
+                @endguest
             </nav>
         </div>
     </header>
@@ -35,6 +74,12 @@
         @if (session('success'))
             <div class="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                {{ session('error') }}
             </div>
         @endif
 

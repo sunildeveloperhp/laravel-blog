@@ -2,13 +2,23 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Post;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PostRequest extends FormRequest
 {
+    // Runs BEFORE validation. Uses the same PostPolicy as everywhere else.
     public function authorize(): bool
     {
-        return true;
+        $post = $this->route('post');
+
+        // Editing an existing post: only its owner (or an admin)
+        if ($post instanceof Post) {
+            return $this->user()->can('update', $post);
+        }
+
+        // Creating a new post: only authors and admins
+        return $this->user()->can('create', Post::class);
     }
 
     public function rules(): array

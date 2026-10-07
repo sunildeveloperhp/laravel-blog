@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -59,7 +60,7 @@ class Post extends Model
         $count = 2;
 
         while (static::withTrashed()->where('slug', $slug)->exists()) {
-            $slug = $original . '-' . $count;
+            $slug = $original.'-'.$count;
             $count++;
         }
 
@@ -86,7 +87,7 @@ class Post extends Model
     public function scopePublished(Builder $query): void
     {
         $query->whereNotNull('published_at')
-              ->where('published_at', '<=', now());
+            ->where('published_at', '<=', now());
     }
 
     // Post::search('laravel') -> title or excerpt contains the word. Does nothing if the term is empty.
@@ -97,8 +98,8 @@ class Post extends Model
         }
 
         $query->where(function (Builder $q) use ($term) {
-            $q->where('title', 'like', '%' . $term . '%')
-              ->orWhere('excerpt', 'like', '%' . $term . '%');
+            $q->where('title', 'like', '%'.$term.'%')
+                ->orWhere('excerpt', 'like', '%'.$term.'%');
         });
     }
 
@@ -132,5 +133,10 @@ class Post extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
     }
 }
