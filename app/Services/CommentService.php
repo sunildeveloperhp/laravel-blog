@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Events\CommentApproved;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
 
 class CommentService
 {
-    // Save a comment. Admin comments are approved straight away and notify the post's author.
+    // Save a comment. Admin comments are approved straight away.
     public function create(Post $post, User $author, string $body): Comment
     {
         $comment = new Comment(['body' => $body]);
@@ -21,7 +22,7 @@ class CommentService
         $post->comments()->save($comment);
 
         if ($comment->isApproved()) {
-            $comment->notifyPostAuthor();
+            CommentApproved::dispatch($comment);
         }
 
         return $comment;

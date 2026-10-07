@@ -7,8 +7,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class NewCommentOnPost extends Notification
+class NewCommentOnPost extends Notification implements ShouldQueue
 {
     use Queueable;
 

@@ -40,7 +40,7 @@ class PageController extends Controller
 
         $admins = User::where('role', Role::Admin)->get();
 
-        Mail::to($admins)->send(new ContactMessage(
+                Mail::to($admins)->queue(new ContactMessage(
             $data['name'],
             $data['email'],
             $data['message'],
