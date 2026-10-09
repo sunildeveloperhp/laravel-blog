@@ -64,7 +64,8 @@ class PostController extends Controller
             $request->safe()->except(['tags', 'featured_image', 'remove_image']),
             $request->file('featured_image'),
             $request->boolean('remove_image'),
-            $request->has('tags') ? $request->validated('tags', []) : null,   // no "tags" sent = keep the current tags
+
+            $request->has('tags') ? ($request->validated('tags') ?? []) : null,  // no "tags" sent = keep the current tags
         );
 
         $post->load(['category', 'user', 'tags']);

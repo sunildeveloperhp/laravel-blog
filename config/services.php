@@ -34,5 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'frontend' => [
+        'secret' => env('FRONTEND_SECRET'),
+    ],
 
 ];

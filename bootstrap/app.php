@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrustFrontendClientIp;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,8 +26,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
         ]);
 
+        // Security headers on every response (website and API)
         $middleware->append(SecurityHeaders::class);
 
+        // API only, and first: the visitor's real IP must be set before the rate limiter runs
+        $middleware->api(prepend: [
+            TrustFrontendClientIp::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Always answer API routes with JSON errors, never HTML pages
@@ -43,7 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             $previous = $e->getPrevious();
 
             if ($previous instanceof ModelNotFoundException) {
-                $model = class_basename($previous->getModel());   // "App\Models\Post" -> "Post"
+                $model = class_basename($previous->getModel());
 
                 return response()->json(['message' => $model.' not found.'], 404);
             }
